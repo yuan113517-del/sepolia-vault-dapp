@@ -1,0 +1,23 @@
+{
+  "name": "commitvault",
+  "version": "1.0.0",
+  "description": "CDS528 group project: commitment-based staking vault (Solidity + Hardhat + web dApp)",
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "coverage": "hardhat coverage",
+    "model:check": "node test/model.check.js",
+    "deploy:local": "hardhat run scripts/deploy.js --network hardhat",
+    "deploy": "hardhat run scripts/deploy.js --network sepolia",
+    "slither": "slither . --hardhat-ignore-compile --filter-paths node_modules",
+    "frontend": "npx serve frontend"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "5.0.2",
+    "dotenv": "^16.4.5",
+    "hardhat": "^2.22.0",
+    "hardhat-gas-reporter": "^2.3.0"
+  }
+}

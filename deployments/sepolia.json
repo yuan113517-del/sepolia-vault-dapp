@@ -1,0 +1,6 @@
+{
+  "network": "sepolia",
+  "token": "0x172d417E823271ae7cb3a4d3Fe90C825FcaE8490",
+  "vault": "0xcc8fD1725C33422e66c950F6bF38ae983561Fe59",
+  "deployer": "0xA2827F893dD227719B9Def714E3d99d3e803d2D4"
+}

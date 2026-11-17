@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CommitVault – patient savers get paid</title>
+<style>
+:root{--bg:#f3f5f4;--card:#fff;--ink:#14283a;--mute:#5c6b78;--line:#d6dde0;--lock:#c98a0b;--ok:#1b7f68;--bad:#b83a2e;--acc:#14283a;--accfg:#fff;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1b26;--card:#17283a;--ink:#e8eef2;--mute:#9db0bf;--line:#2b4156;--lock:#e6a93a;--ok:#4cc3a4;--bad:#ef7b6f;--acc:#e6a93a;--accfg:#10202e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1b26;--card:#17283a;--ink:#e8eef2;--mute:#9db0bf;--line:#2b4156;--lock:#e6a93a;--ok:#4cc3a4;--bad:#ef7b6f;--acc:#e6a93a;--accfg:#10202e;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 48px}
+h1{font:600 34px/1.1 "Iowan Old Style",Palatino,"Palatino Linotype",Georgia,serif;margin:0 0 4px;letter-spacing:-.01em}
+h2{font:600 18px/1.2 "Iowan Old Style",Palatino,Georgia,serif;margin:0 0 10px}
+.sub{color:var(--mute);margin:0 0 16px;max-width:62ch}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:16px}
+.stats div{background:var(--card);padding:10px 12px}.stats b{display:block;font-size:19px;font-variant-numeric:tabular-nums}.stats span{color:var(--mute);font-size:12.5px}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:16px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+button,input{font:inherit;color:inherit}
+button{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:6px 11px;cursor:pointer}
+button:hover{border-color:var(--mute)}button:focus-visible,input:focus-visible{outline:2px solid var(--lock);outline-offset:2px}
+button.pri{background:var(--acc);color:var(--accfg);border-color:var(--acc)}button.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+button.warn{color:var(--bad);border-color:var(--bad)}
+input[type=number]{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:5px;background:var(--bg)}
+label{display:block;color:var(--mute);font-size:13px;margin:10px 0 4px}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.tiers button{padding:8px 4px;text-align:center;line-height:1.25}.tiers small{display:block;color:var(--mute)}
+.pos{border-top:1px solid var(--line);padding:12px 0}.pos:first-of-type{border-top:0}
+.row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+.track{height:8px;border-radius:4px;background:var(--line);margin:8px 0;overflow:hidden}.track i{display:block;height:100%;background:var(--lock)}.track.done i{background:var(--ok)}
+.num{font-variant-numeric:tabular-nums}.mute{color:var(--mute)}.ok{color:var(--ok)}.bad{color:var(--bad)}
+#msg{min-height:22px;margin:8px 0 0;font-size:14px}
+.log{max-height:210px;overflow:auto;font-size:13px;margin:0;padding:0;list-style:none}.log li{padding:3px 0;border-top:1px solid var(--line)}
+.who button{min-width:76px}
+.note{font-size:13px;color:var(--mute);margin-top:16px}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>CommitVault</h1>
+  <p class="sub">Lock Campus Tokens for 30, 90 or 180 days. Longer locks earn a bigger share of the reward stream. Leave early and your 10% penalty goes to the people who stay.</p>
+
+  <div class="bar who" id="who" role="group" aria-label="Acting as"></div>
+  <div class="stats" id="stats"></div>
+
+  <div class="bar" role="group" aria-label="Time travel">
+    <strong id="clock" class="num"></strong><span class="mute">Skip ahead:</span>
+    <button data-act="time" data-v="1">1 day</button><button data-act="time" data-v="7">1 week</button>
+    <button data-act="time" data-v="30">30 days</button><button data-act="time" data-v="90">90 days</button><button data-act="time" data-v="180">180 days</button>
+    <button data-act="reset">Reset demo</button>
+  </div>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="h-new">
+      <h2 id="h-new">New position</h2>
+      <div class="row"><span class="mute">Wallet</span><b id="wal" class="num"></b></div>
+      <button data-act="faucet" style="margin-top:8px">Get 1,000 test CPT</button>
+      <label for="amt">Amount to lock (CPT)</label>
+      <input id="amt" type="number" min="1" step="any" value="500">
+      <label id="tl">Lock period</label>
+      <div class="tiers" id="tiers" role="group" aria-labelledby="tl"></div>
+      <button class="pri" data-act="deposit" style="width:100%;margin-top:14px">Lock tokens</button>
+      <div id="ownerBox" hidden>
+        <h2 style="margin-top:20px">Fund rewards (owner)</h2>
+        <label for="fund">Amount streamed over 30 days</label>
+        <input id="fund" type="number" min="1" value="3000">
+        <button data-act="fund" style="width:100%;margin-top:10px">Add to reward pool</button>
+        <button data-act="pause" style="width:100%;margin-top:8px" id="pauseBtn"></button>
+      </div>
+      <p id="msg" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="h-pos">
+      <h2 id="h-pos">Your positions</h2>
+      <div id="positions"></div>
+    </section>
+  </div>
+
+  <section class="panel" style="margin-top:16px" aria-labelledby="h-log">
+    <h2 id="h-log">Contract events</h2><ul class="log" id="log"></ul>
+  </section>
+  <p class="note">Demo mode: this page runs a JavaScript copy of <code>CommitVault.sol</code> in your browser (same integer maths), so no wallet or real funds are involved. The Solidity contracts and Sepolia deployment steps are in the project repository.</p>
+</main>
+<script>
+/*MODEL*/
+</script>
+<script>
+const E18=VaultModel.E18, TI=[{n:'30 days',x:'1.0×'},{n:'90 days',x:'1.5×'},{n:'180 days',x:'2.5×'}];
+const USERS=['alice','bob','owner'], NAME={alice:'Alice',bob:'Bob',owner:'Owner'};
+let v, me='alice', tier=0, paused=false;
+const $=s=>document.querySelector(s);
+const f=(x,d=2)=>(Number(x/10n**14n)/1e4).toLocaleString(undefined,{maximumFractionDigits:d});
+const ERR={AmountTooSmall:'Minimum lock is 1 CPT.',ERC20InsufficientBalance:'Not enough CPT in your wallet. Use the faucet first.',FaucetCooldown:'The faucet allows one claim per day. Skip ahead 1 day.',EnforcedPause:'The vault is paused: new deposits are blocked, but exits still work.',TooManyPositions:'Maximum 20 positions per wallet.',DurationTooShort:'Reward duration is too short.'};
+function seed(){v=new VaultModel();v.wallet.owner=100000n*E18;v.fund('owner',10000n*E18,30*86400);v.faucet('alice');v.faucet('bob');v.deposit('bob',500n*E18,0);v.advance(86400*3);msg('Demo reset. Bob already locked 500 CPT for 30 days.');}
+function msg(t,bad){const m=$('#msg');m.textContent=t||'';m.className=bad?'bad':'ok';}
+function run(fn,okText){try{fn();msg(okText);}catch(e){msg(ERR[e.message]||e.message,true);}render();}
+function cd(sec){return sec<=0n?'unlocked':Math.ceil(Number(sec)/86400)+' days left';}
+function render(){
+  $('#who').innerHTML=USERS.map(u=>`<button data-act="who" data-v="${u}" class="${u===me?'on':''}" aria-pressed="${u===me}">${NAME[u]}</button>`).join('');
+  $('#tiers').innerHTML=TI.map((t,i)=>`<button data-act="tier" data-v="${i}" class="${i===tier?'on':''}" aria-pressed="${i===tier}">${t.n}<small>${t.x} weight</small></button>`).join('');
+  $('#clock').textContent=new Date(Number(v.now)*1000).toISOString().slice(0,10);
+  $('#wal').textContent=f(v.bal(me))+' CPT';
+  const solvent=v.vaultBal===v.totalPrincipal+v.reserve;
+  $('#stats').innerHTML=[['Total locked',f(v.totalPrincipal)+' CPT'],['Reward reserve',f(v.reserve)+' CPT'],['Est. yearly yield',v.apr().toFixed(1)+'%'],['Reward stream',v.now<v.finish?f(v.rate*86400n)+' CPT/day':'idle'],['Vault balance check',solvent?'balanced':'MISMATCH']].map(([a,b])=>`<div><b class="${b==='MISMATCH'?'bad':''}">${b}</b><span>${a}</span></div>`).join('');
+  $('#ownerBox').hidden=me!=='owner';$('#pauseBtn').textContent=v.paused?'Unpause vault':'Pause deposits';
+  const list=(v.pos[me]||[]).map((p,i)=>[p,i]).filter(([p])=>!p.closed);
+  $('#positions').innerHTML=list.length?list.map(([p,i])=>{
+    const d=VaultModel.TIERS[p.tier].d, left=p.unlock-v.now, done=left<=0n, pct=Math.min(100,Math.max(0,Number((d-(left>0n?left:0n))*100n/d)));
+    const pr=v.pending(me,i), pen=p.amount/10n;
+    return `<div class="pos"><div class="row"><b class="num">${f(p.amount)} CPT <span class="mute">· ${TI[p.tier].n}, ${TI[p.tier].x}</span></b><span class="${done?'ok':'mute'}">${cd(left)}</span></div>
+    <div class="track ${done?'done':''}" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Lock progress"><i style="width:${pct}%"></i></div>
+    <div class="row"><span>Earned so far: <b class="num ok">${f(pr,4)} CPT</b></span><span>
+    <button data-act="claim" data-v="${i}">Claim</button>
+    ${done?`<button class="pri" data-act="withdraw" data-v="${i}">Withdraw all</button>`:`<button class="warn" data-act="withdraw" data-v="${i}" title="Early exit: 10% penalty and unclaimed rewards are forfeited">Exit early: get ${f(p.amount-pen)}, lose ${f(pen)} + ${f(pr,2)} rewards</button>`}</span></div></div>`}).join(''):'<p class="mute">No open positions for '+NAME[me]+'. Lock some tokens on the left.</p>';
+  $('#log').innerHTML=v.events.map(e=>{const k=Object.entries(e).filter(([a])=>!['t','name','user'].includes(a)).map(([a,b])=>a==='id'?`position #${b}`:a==='tier'?TI[b].n:`${a} ${typeof b==='bigint'?f(b,2):b}`).join(', ');return `<li><span class="mute">${new Date(Number(e.t)*1000).toISOString().slice(5,10)}</span> <b>${e.name}</b> ${NAME[e.user]||''} <span class="mute">${k}</span></li>`}).join('')||'<li class="mute">No events yet.</li>';
+}
+document.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,x=b.dataset.v;
+  if(a==='who'){me=x;msg('');render();}
+  else if(a==='tier'){tier=+x;render();}
+  else if(a==='time'){v.advance(86400*+x);msg('Skipped ahead '+x+' day(s).');render();}
+  else if(a==='reset'){seed();me='alice';render();}
+  else if(a==='faucet')run(()=>v.faucet(me),'Received 1,000 CPT.');
+  else if(a==='deposit'){const n=parseFloat($('#amt').value);if(!(n>0)){msg('Enter an amount above 0.',true);return;}run(()=>v.deposit(me,BigInt(Math.round(n*1e6))*10n**12n,tier),'Locked '+n+' CPT for '+TI[tier].n+'.');}
+  else if(a==='claim')run(()=>v.claim(me,+x),'Rewards claimed.');
+  else if(a==='withdraw')run(()=>v.withdraw(me,+x),'Position closed.');
+  else if(a==='fund'){const n=parseFloat($('#fund').value);if(!(n>0)){msg('Enter an amount above 0.',true);return;}run(()=>v.fund('owner',BigInt(Math.round(n*1e6))*10n**12n,30*86400),'Reward pool funded.');}
+  else if(a==='pause'){v.paused=!v.paused;msg(v.paused?'Deposits paused.':'Deposits resumed.');render();}
+});
+seed();render();
+</script>
+</body>
+</html>
